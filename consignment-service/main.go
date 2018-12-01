@@ -41,9 +41,9 @@ func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment, re
 		return err
 	}
 
-	//resp.Create = true
-	//resp.Consignment = consignment
-	resp = &pb.Response{Created: true, Consignment: consignment}
+	resp.Created = true
+	resp.Consignment = consignment
+	//resp = &pb.Response{Created: true, Consignment: consignment}
 	return nil
 }
 
