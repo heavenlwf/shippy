@@ -1,7 +1,7 @@
 package main
 
 import (
-	pb "github.com/EwanValentine/shippy/consignment-service/proto/consignment"
+	pb "github.com/heavenlwf/shippy/consignment-service/proto/consignment"
 	"io/ioutil"
 	"log"
 	"encoding/json"
