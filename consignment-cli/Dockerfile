@@ -3,8 +3,7 @@ FROM golang:1.10 as builder
 WORKDIR /Users/heaven/go/src/shippy/consignment-cli
 ENV GOPATH /Users/heaven/go
 COPY . .
-#RUN go get -u github.com/golang/dep/cmd/dep
-#RUN /Users/heaven/go/src/github.com/golang/dep/cmd/dep init && /Users/heaven/go/src/github.com/golang/dep/cmd/dep ensure
+
 RUN go get
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo .
