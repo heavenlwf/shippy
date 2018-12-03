@@ -2,4 +2,4 @@ build:
 	docker build -t consignment-cli .
 
 run:
-	docker run -it -e MICRO_REGISTRY=mdns --name consignment-cli consignment-cli
+	docker run -it -e MICRO_REGISTRY=mdns consignment-cli

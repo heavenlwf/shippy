@@ -2,6 +2,7 @@ FROM golang:1.10 as builder
 
 WORKDIR /Users/heaven/go/src/shippy/vessel-service
 ENV GOPATH /Users/heaven/go
+COPY . .
 
 RUN go get
 
@@ -12,6 +13,6 @@ RUN apk --no-cache add ca-certificates
 
 RUN mkdir /app
 WORKDIR /app
-COPY --from=builder /User/heaven/go/src/shippy/vessel-service .
+COPY --from=builder /Users/heaven/go/src/shippy/vessel-service .
 
 CMD ["./vessel-service"]

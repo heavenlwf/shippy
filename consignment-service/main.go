@@ -1,6 +1,7 @@
 package main
 
 import (
+	vesselPb "github.com/heavenlwf/shippy/vessel-service/proto/vessel"
 	pb "shippy/consignment-service/proto/consignment"
 	"context"
 	"log"
@@ -33,9 +34,22 @@ func (repo *Repository) GetAll() ([]*pb.Consignment, error)  {
 
 type service struct {
 	repo IRepository
+	vesselClient vesselPb.VesselServiceClient
 }
 
 func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment, resp *pb.Response) error {
+	// 检查是否有合适的货轮
+	vReq := &vesselPb.Specification{
+		Capacity: int32(len(req.Containers)),
+		MaxWeight: req.Weight,
+	}
+	vResp, err := s.vesselClient.FindAvailable(context.Background(), vReq)
+	if err != nil {
+		log.Fatalf("vesselClient FindAvailable err: %t", err)
+		return err
+	}
+	log.Printf("found vessel: %s\n", vResp.Vessel.Name)
+	req.VesselId = vResp.Vessel.Id
 	consignment, err := s.repo.Create(req)
 	if err != nil {
 		return err
@@ -67,8 +81,8 @@ func main() {
 	// 解析命令行参数
 	server.Init()
 	repo := &Repository{}
-
-	pb.RegisterShippingServiceHandler(server.Server(), &service{repo})
+	vClient := vesselPb.NewVesselServiceClient("go.micro.srv.vessl", server.Client())
+	pb.RegisterShippingServiceHandler(server.Server(), &service{repo, vClient})
 	if err := server.Run(); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
