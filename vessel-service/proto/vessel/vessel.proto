@@ -5,6 +5,8 @@ package go.micro.srv.vessel;
 service VesselService {
     // 检查是否有能力运送货物的轮船
     rpc FindAvailable (Specification) returns (Response) {}
+    // 创建货轮
+    rpc Create(Vessel) returns (Response) {}
 }
 
 // 每天货轮的信息
@@ -27,4 +29,5 @@ message Specification {
 message Response {
     Vessel vessel = 1;
     repeated Vessel vessels = 2;
+    bool Created = 3;
 }

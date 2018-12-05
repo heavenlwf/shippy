@@ -2,11 +2,16 @@ package main
 
 import (
 	vesselPb "github.com/heavenlwf/shippy/vessel-service/proto/vessel"
-	pb "shippy/consignment-service/proto/consignment"
-	"context"
-	"log"
+	pb "github.com/heavenlwf/shippy/consignment-service/proto/consignment"
+		"log"
 	"github.com/micro/go-micro"
+	"os"
+	)
+
+const (
+	DEFAULT_MONGO_HOST = "localhost:27017"
 )
+
 
 // IRepository interface
 type IRepository interface {
@@ -14,64 +19,18 @@ type IRepository interface {
 	GetAll() ([]*pb.Consignment, error)
 }
 
-//type Repository struct {
-//	consignment []*pb.Consignment
-//}
-
-//func (repo *Repository) Create(consignment *pb.Consignment) (*pb.Consignment, error)  {
-//	repo.consignment = append(repo.consignment, consignment)
-//	log.Printf("Create consignment: %+v\n", consignment)
-//	return consignment, nil
-//}
-//
-//func (repo *Repository) GetAll() ([]*pb.Consignment, error)  {
-//	for _, v := range repo.consignment {
-//		log.Printf("Get All: %+v\n", v)
-//	}
-//
-//	return repo.consignment, nil
-//}
-
-type service struct {
-	repo ConsignmentRepository
-	vesselClient vesselPb.VesselServiceClient
-}
-
-func (s *service) CreateConsignment(ctx context.Context, req *pb.Consignment, resp *pb.Response) error {
-	// 检查是否有合适的货轮
-	vReq := &vesselPb.Specification{
-		Capacity: int32(len(req.Containers)),
-		MaxWeight: req.Weight,
-	}
-	vResp, err := s.vesselClient.FindAvailable(context.Background(), vReq)
-	if err != nil {
-		log.Fatalf("vesselClient FindAvailable err: %t", err)
-		return err
-	}
-	log.Printf("found vessel: %s\n", vResp.Vessel.Name)
-	req.VesselId = vResp.Vessel.Id
-	err := s.repo.Create(req)
-	if err != nil {
-		return err
-	}
-
-	resp.Created = true
-	resp.Consignment = consignment
-	//resp = &pb.Response{Created: true, Consignment: consignment}
-	return nil
-}
-
-func (s *service) GetConsignments(ctx context.Context, req *pb.GetRequest, resp *pb.Response)  error {
-	allConsignments, err := s.repo.GetAll()
-	if err != nil {
-		return err
-	}
-
-	resp.Consignments = allConsignments
-	return nil
-}
-
 func main() {
+
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		dbHost = DEFAULT_MONGO_HOST
+	}
+	session, err := CreateSession(dbHost)
+	defer session.Close()
+	if err != nil {
+		log.Fatalf("create session error: %v\n", err)
+	}
+
 	server := micro.NewService(
 		// 必须和 consignment.proto 中的 package 一致
 		micro.Name("go.micro.srv.consignment"),
@@ -80,9 +39,10 @@ func main() {
 
 	// 解析命令行参数
 	server.Init()
-	repo := &ConsignmentRepository{}
+
 	vClient := vesselPb.NewVesselServiceClient("go.micro.srv.vessel", server.Client())
-	pb.RegisterShippingServiceHandler(server.Server(), &service{repo, vClient})
+	pb.RegisterShippingServiceHandler(server.Server(), &service{session, vClient})
+
 	if err := server.Run(); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
