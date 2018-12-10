@@ -4,6 +4,8 @@ WORKDIR /Users/heaven/go/src/shippy/consignment-cli
 ENV GOPATH /Users/heaven/go
 COPY . .
 
+RUN go get -u github.com/golang/dep/cmd/dep
+RUN dep init && dep ensure
 RUN go get
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo .
