@@ -1,12 +1,10 @@
 FROM golang:1.10 as builder
 
-WORKDIR /Users/heaven/go/src/shippy/consignment-cli
-ENV GOPATH /Users/heaven/go
+WORKDIR /go/src/github.com/heavenlwf/shippy/consignment-cli
 COPY . .
 
 RUN go get -u github.com/golang/dep/cmd/dep
 RUN dep init && dep ensure
-RUN go get
 
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo .
 
@@ -16,7 +14,7 @@ RUN apk --no-cache add ca-certificates
 RUN mkdir /app
 WORKDIR /app
 COPY consignment.json /app/consignment.json
-COPY --from=builder /Users/heaven/go/src/shippy/consignment-cli .
+COPY --from=builder /go/src/github.com/heavenlwf/shippy/consignment-cli/consignment-cli .
 
 ENTRYPOINT ["./consignment-cli", "consignment.json"]
 CMD ["./consignment-cli"]

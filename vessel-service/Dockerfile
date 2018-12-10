@@ -1,10 +1,8 @@
 FROM golang:1.10 as builder
 
-WORKDIR /Users/heaven/go/src/shippy/vessel-service
-ENV GOPATH /Users/heaven/go
+WORKDIR /go/src/github.com/heavenlwf/shippy/vessel-service
 COPY . .
 
-RUN go get
 RUN go get -u github.com/golang/dep/cmd/dep
 RUN dep init && dep ensure
 
@@ -15,6 +13,6 @@ RUN apk --no-cache add ca-certificates
 
 RUN mkdir /app
 WORKDIR /app
-COPY --from=builder /Users/heaven/go/src/shippy/vessel-service .
+COPY --from=builder /go/src/github.com/heavenlwf/shippy/vessel-service/vessel-service .
 
 CMD ["./vessel-service"]
