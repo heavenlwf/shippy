@@ -12,13 +12,6 @@ const (
 	DEFAULT_MONGO_HOST = "localhost:27017"
 )
 
-
-// IRepository interface
-type IRepository interface {
-	Create(*pb.Consignment) (*pb.Consignment, error)
-	GetAll() ([]*pb.Consignment, error)
-}
-
 func main() {
 
 	dbHost := os.Getenv("DB_HOST")

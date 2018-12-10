@@ -6,7 +6,7 @@ COPY . .
 
 RUN go get
 
-RUN CGO_ENABLED=0 GOOS=linux go build  -o consignment-service -a -installsuffix cgo main.go
+RUN CGO_ENABLED=0 GOOS=linux go build  -o consignment-service -a -installsuffix cgo main.go repository.go handler.go datastore.go
 
 FROM alpine:latest
 
